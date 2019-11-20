@@ -37,7 +37,6 @@ public class DelaunayTriangulation
     void Finalize()
     {
         //diagramから、superTriangleの各頂点を含む三角形を除外する
-        
         Deque<Triangle> S = CopyStackOf(diagram);
         diagram.clear();
         while(S.size()>0)
