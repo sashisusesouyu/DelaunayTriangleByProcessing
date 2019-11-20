@@ -1,27 +1,34 @@
 import java.util.Deque;
 import java.util.LinkedList;
 
-DelaunayTriangulation hoge;
+DelaunayTriangulation diagram;
 
 void setup()
 {
     size(1600,1600);
-    hoge = new DelaunayTriangulation();
+    diagram = new DelaunayTriangulation();
 }
 
 void draw()
 {
     background(#FFFFFF);
-    noFill();
-    stroke(#000000);
-    strokeWeight(3);
+    // noFill();
+    // stroke(#000000);
+    // strokeWeight(3);
 
-    hoge.Draw();
+    diagram.Draw();
 }
 
 void mousePressed()
 {
-    hoge.AddPoint(new PVector(mouseX,mouseY));
+    if(mouseButton == LEFT)
+    {
+        diagram.AddPoint(new PVector(mouseX,mouseY));
+    }
+    if(mouseButton == RIGHT)
+    {
+        diagram.Finalize();
+    }
 }
 
 void point(float x, float y)

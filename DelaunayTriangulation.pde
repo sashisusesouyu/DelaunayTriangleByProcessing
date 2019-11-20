@@ -34,6 +34,22 @@ public class DelaunayTriangulation
         Triangulation(p);
     }
 
+    void Finalize()
+    {
+        //diagramから、superTriangleの各頂点を含む三角形を除外する
+        
+        Deque<Triangle> S = CopyStackOf(diagram);
+        diagram.clear();
+        while(S.size()>0)
+        {
+            Triangle checking = S.pop();
+            if(!IsSharingPoint(checking, superTriangle))
+            {
+                diagram.push(checking);
+            }
+        }
+    }
+
     void Triangulation(PVector p)
     {
         //diagramと同じ内容のスタックを組む。
@@ -48,7 +64,7 @@ public class DelaunayTriangulation
         for(Triangle t : Divide(baseTriangles, ABC, p)) newTriangles.push(t);
 
         while(baseTriangles.size()>0) newTriangles.push(baseTriangles.pop());
-        
+
         //新しい三角形達でdiagramを更新
         diagram = CopyStackOf(newTriangles);
     }
@@ -73,22 +89,22 @@ public class DelaunayTriangulation
             if(IsEqual(ABC,ADB))
             {
                 newTriangles.push(ABC);
+                continue;
+            }
+
+            PVector D = GetVertexPoint(ADB, AB);
+            if(Contains(ABC,D))
+            {
+                //FLIP
+                Deque<Triangle> FlipedTriangles = Flip(ADB, AB, p);
+                for(Triangle t : FlipedTriangles) divided.push(t);
             }
             else
             {
-                PVector D = GetVertexPoint(ADB, AB);
-                if(Contains(ABC,D))
-                {
-                    //FLIP
-                    Deque<Triangle> FlipedTriangles = Flip(ADB, AB, p);
-                    for(Triangle t : FlipedTriangles) divided.push(t);
-                }
-                else
-                {
-                    newTriangles.push(ABC);
-                    newTriangles.push(ADB);
-                }
+                newTriangles.push(ABC);
+                newTriangles.push(ADB);
             }
+            
 
         }
         
