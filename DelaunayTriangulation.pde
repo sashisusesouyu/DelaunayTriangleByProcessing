@@ -4,9 +4,6 @@ public class DelaunayTriangulation
     Deque<Triangle> diagram = new LinkedList<Triangle>();
     Triangle superTriangle;
 
-    //デバッグ用に、最新の分割分を保持する用。
-    Deque<Triangle> news = new LinkedList<Triangle>();
-
     public DelaunayTriangulation()
     {
         superTriangle = new Triangle(
@@ -23,7 +20,6 @@ public class DelaunayTriangulation
         // superTriangle.Draw();
         for(PVector p : points) point(p.x, p.y);
         for(Triangle t : diagram)
-        // for(Triangle t : news)
         {
             strokeWeight(2);
             Circle c = GetCircumscribedCircle(t);
@@ -52,28 +48,21 @@ public class DelaunayTriangulation
         Deque<Triangle> newTriangles = new LinkedList<Triangle>();
 
         //pを含む三角形を探す
-        while (baseTriangles.size() > 0)
+
+        Triangle ABC = superTriangle;
+
+        for(Triangle t : baseTriangles)
         {
-            Triangle checking = baseTriangles.pop();
-            
-            //三角形の図形の内部に入っているか？
-            if(IsInsideOfTriangle(checking, p))
-            {
-                for(Triangle t : Divide(baseTriangles, checking, p))
-                {
-                    newTriangles.push(t);
-                }
-            }
-            else
-            {
-                newTriangles.push(checking);
-            }
+            if(IsInsideOfTriangle(t,p)) ABC = t;
+        }
+
+        for(Triangle t : Divide(baseTriangles, ABC, p))
+        {
+            newTriangles.push(t);
         }
         
         //新しい三角形達でdiagramを更新
         diagram = CopyStackOf(newTriangles);
-
-
     }
 
     Deque<Triangle> Divide(Deque<Triangle> baseTriangles, Triangle checking, PVector p)
@@ -90,38 +79,28 @@ public class DelaunayTriangulation
         //戻すトライアングル
         while(divided.size()>0)
         {
-            Triangle ABP = divided.pop();
-            Edge AB = GetOppositeEdge(ABP,p);
-
-            if(Contains(superTriangle, AB))
+            Triangle ABC = divided.pop();
+            Edge AB = GetOppositeEdge(ABC, p);
+            Triangle ADB = GetTriangleShareEdge(ABC,AB,diagram);
+            if(IsEqual(ABC,ADB))
             {
-                //辺ABが最外部(superTriangleの辺)である場合、ABPをそのまま処理。
-                newTriangles.push(ABP);
+                newTriangles.push(ABC);
             }
             else
             {
-                //ABPと辺を共有する三角形ADBが見つかった場合
-                //ABPの外接円がDを含むかどうか調べる。
-                //含む(=不正な円)の場合、辺ABをフリップしADP、DBPを作り、作った新しい三角形はDividedのスタックに積む。
-                //含まない場合、ABP、ADBをそのままbaseTriangleに積む。
-                Triangle ADB = GetTriangleShareEdge(ABP, AB, baseTriangles);
-                PVector D = GetVertexPoint(ADB,AB);
-
-                println(Contains(ABP,D));
-
-                if(Contains(ABP,D))
+                PVector D = GetVertexPoint(ADB, AB);
+                if(Contains(ABC,D))
                 {
-                    // println("FLIP");
-                    //FLIPを実行
+                    //FLIP
                     Deque<Triangle> FlipedTriangles = Flip(ADB, AB, p);
                     for(Triangle t : FlipedTriangles) divided.push(t);
                 }
                 else
                 {
-                    newTriangles.push(ABP);
-                    newTriangles.push(ADB);
+                    newTriangles.push(ABC);
                 }
             }
+
         }
         
         return newTriangles;
