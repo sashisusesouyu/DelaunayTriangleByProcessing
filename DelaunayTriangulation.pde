@@ -6,13 +6,8 @@ public class DelaunayTriangulation
 
     public DelaunayTriangulation()
     {
-        superTriangle = new Triangle(
-            new PVector(width/2,0),
-            new PVector(0, height),
-            new PVector(width,height)
-        );
+        superTriangle = GenerateSuperTriangle();
         diagram.add(superTriangle);
-        superTriangle.Color = #0000FF;
     }
 
     void Draw()
@@ -24,12 +19,12 @@ public class DelaunayTriangulation
             strokeWeight(2);
             Circle c = GetCircumscribedCircle(t);
 
-            stroke(Contains(c, new PVector(mouseX,mouseY))? #F00000 : #000000,100);
+            // stroke(Contains(c, new PVector(mouseX,mouseY))? #F00000 : #000000,100);
             t.Draw();
 
-            stroke(Contains(c, new PVector(mouseX,mouseY))? #F00000 : #A0A0A0, 100);
-            noFill();
-            c.Draw();
+            // stroke(Contains(c, new PVector(mouseX,mouseY))? #F00000 : #A0A0A0, 100);
+            // noFill();
+            // c.Draw();
         }
     }
 
@@ -47,19 +42,12 @@ public class DelaunayTriangulation
         //分割後の三角形を格納するスタック
         Deque<Triangle> newTriangles = new LinkedList<Triangle>();
 
-        //pを含む三角形を探す
+        //pを含む三角形ABCを探す
+        Triangle ABC = IsInsideOfTriangle(baseTriangles, p);
 
-        Triangle ABC = superTriangle;
+        for(Triangle t : Divide(baseTriangles, ABC, p)) newTriangles.push(t);
 
-        for(Triangle t : baseTriangles)
-        {
-            if(IsInsideOfTriangle(t,p)) ABC = t;
-        }
-
-        for(Triangle t : Divide(baseTriangles, ABC, p))
-        {
-            newTriangles.push(t);
-        }
+        while(baseTriangles.size()>0) newTriangles.push(baseTriangles.pop());
         
         //新しい三角形達でdiagramを更新
         diagram = CopyStackOf(newTriangles);
@@ -81,7 +69,7 @@ public class DelaunayTriangulation
         {
             Triangle ABC = divided.pop();
             Edge AB = GetOppositeEdge(ABC, p);
-            Triangle ADB = GetTriangleShareEdge(ABC,AB,diagram);
+            Triangle ADB = GetTriangleShareEdge(ABC,AB,baseTriangles);
             if(IsEqual(ABC,ADB))
             {
                 newTriangles.push(ABC);
@@ -98,6 +86,7 @@ public class DelaunayTriangulation
                 else
                 {
                     newTriangles.push(ABC);
+                    newTriangles.push(ADB);
                 }
             }
 

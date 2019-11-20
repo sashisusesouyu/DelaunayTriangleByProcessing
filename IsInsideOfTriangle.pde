@@ -13,3 +13,27 @@ public boolean IsInsideOfTriangle(Triangle triangle, PVector p)
 
     return (ABxBP.z >=0 && BCxCP.z >=0 && CAxAP.z>=0) || (ABxBP.z <=0 && BCxCP.z <=0 && CAxAP.z<=0);
 }
+
+public Triangle IsInsideOfTriangle(Deque<Triangle> triangles, PVector p)
+{
+    Triangle retTriangle = triangles.peek();
+    Deque<Triangle> S = new LinkedList<Triangle>();
+
+    while(triangles.size()>0)
+    {
+        Triangle checking = triangles.pop();
+        if(IsInsideOfTriangle(checking, p))
+        {
+            retTriangle = checking;
+            break;
+        }
+        else
+        {
+            S.push(checking);
+        }
+    }
+
+    while(S.size() >0) triangles.push(S.pop());
+
+    return retTriangle;
+}
